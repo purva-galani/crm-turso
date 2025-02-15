@@ -14,7 +14,7 @@ import { io } from 'socket.io-client';
 const socket = io('http://localhost:8000');
 
 interface Complaint {
-  _id: string;
+  id: number; // Changed from _id (MongoDB) to id (Turso)
   complainerName: string;
   contactNumber: string;
   caseStatus: string;
@@ -29,7 +29,7 @@ const ComplaintPage: React.FC = () => {
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [filteredComplaints, setFilteredComplaints] = useState<Complaint[]>([]);
   const [formData, setFormData] = useState<Complaint>({
-    _id: "",
+    id: 0, // Changed from _id to id
     complainerName: "",
     contactNumber: "",
     caseStatus: "Pending",
@@ -47,14 +47,12 @@ const ComplaintPage: React.FC = () => {
 
   const fetchComplaints = useCallback(async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:8000/api/v1/complaint/getAllComplaints"
-      );
+      const response = await axios.get("/api/complaints"); // Updated endpoint
       setComplaints(response.data.complaints || []);
     } catch (error) {
       console.error("Error fetching complaints:", error);
     }
-  }, []); 
+  }, []);
 
   useEffect(() => {
     if (showResolved) {
@@ -76,7 +74,7 @@ const ComplaintPage: React.FC = () => {
     socket.on('reminder', (data) => {
       console.log('Reminder received:', data);
       showToast(
-        `Unpaid Invoice Reminder Send to the ${data.customerName}`,
+        `Unpaid Invoice Reminder Sent to ${data.customerName}`,
         'success'
       );
     });
@@ -120,21 +118,15 @@ const ComplaintPage: React.FC = () => {
 
     try {
       if (isEditing) {
-        await axios.put(
-          `http://localhost:8000/api/v1/complaint/updateComplaint/${formData._id}`,
-          formData
-        );
+        await axios.put(`/api/complaints`, formData); // Updated endpoint
         showToast("Complaint updated successfully!", "success");
       } else {
-        await axios.post(
-          "http://localhost:8000/api/v1/complaint/createComplaint",
-          formData
-        );
+        await axios.post("/api/complaints", formData); // Updated endpoint
         showToast("Complaint created successfully!", "success");
       }
 
       setFormData({
-        _id: "",
+        id: 0,
         complainerName: "",
         contactNumber: "",
         caseStatus: "Pending",
@@ -161,15 +153,13 @@ const ComplaintPage: React.FC = () => {
     setIsFormVisible(true);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     try {
-      await axios.delete(
-        `http://localhost:8000/api/v1/complaint/deleteComplaint/${id}`
-      );
+      await axios.delete(`/api/complaints?id=${id}`); // Updated endpoint
       fetchComplaints();
       showToast("Complaint deleted successfully!", "success");
     } catch (error) {
-      console.error("Error updating complaint:", error); 
+      console.error("Error deleting complaint:", error);
       showToast("Failed to delete complaint.", "error");
     }
   };
@@ -189,15 +179,15 @@ const ComplaintPage: React.FC = () => {
       renderCell: (params: GridRenderCellParams) => (
         <div className="flex justify-center items-center gap-3">
           <button
-            className="p-2 text-green-600  rounded hover:bg-green-200"
+            className="p-2 text-green-600 rounded hover:bg-green-200"
             onClick={() => handleEdit(params.row)}
             aria-label="Edit Contact"
           >
             <CiEdit size={18} />
           </button>
           <button
-            className="p-2 text-red-600  rounded hover:bg-red-100"
-            onClick={() => handleDelete(params.row._id)}
+            className="p-2 text-red-600 rounded hover:bg-red-100"
+            onClick={() => handleDelete(params.row.id)} // Changed from _id to id
             aria-label="Delete Contact"
           >
             <MdDelete size={18} />
@@ -213,16 +203,16 @@ const ComplaintPage: React.FC = () => {
       <h2 className="text-2xl font-semibold mb-6 text-center text-gray-800">
         Contact Record
       </h2>
-      <div className=" mb-4">
+      <div className="mb-4">
         <Button
           className="contactbtn shadow-[0_4px_14px_0_rgb(162,0,255,39%)] hover:shadow-[0_6px_20px_rgba(162,0,255,50%)] hover:bg-[rgba(162, 0, 255, 0.9)] px-8 py-2 bg-purple-500 rounded-md text-white font-light transition duration-200 ease-linear"
           color="primary"
           onClick={() => {
             setFormData({
-              _id: "",
+              id: 0,
               complainerName: "",
               contactNumber: "",
-              caseStatus: "",
+              caseStatus: "Pending",
               caseOrigin: "",
               subject: "",
               priority: "Medium",
@@ -420,7 +410,7 @@ const ComplaintPage: React.FC = () => {
             <DataGrid
               rows={filteredComplaints}
               columns={columns}
-              getRowId={(row) => row._id}
+              getRowId={(row) => row.id} // Changed from _id to id
               initialState={{
                 pagination: {
                   paginationModel: {

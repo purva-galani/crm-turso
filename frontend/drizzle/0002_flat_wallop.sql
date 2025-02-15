@@ -1,0 +1,1 @@
+ALTER TABLE `users_table` ADD `age` integer NOT NULL;
