@@ -9,20 +9,20 @@ import { IoMdList, IoMdTime } from "react-icons/io";
 import { Button } from "@nextui-org/react";
 import { Box, Typography } from "@mui/material";
 import { DataGrid, GridRenderCellParams } from "@mui/x-data-grid";
-import { io } from 'socket.io-client';
+// import { io } from 'socket.io-client';
 
-const socket = io('http://localhost:8000');
+// const socket = io('http://localhost:8000');
 
 interface Complaint {
   id: number; // Changed from _id (MongoDB) to id (Turso)
   complainerName: string;
   contactNumber: string;
-  caseStatus: string;
-  caseOrigin: string;
   subject: string;
-  priority: string;
+  caseOrigin: string;
   date: string;
   time: string;
+  caseStatus: string;
+  priority: string;
 }
 
 const ComplaintPage: React.FC = () => {
@@ -32,12 +32,12 @@ const ComplaintPage: React.FC = () => {
     id: 0, // Changed from _id to id
     complainerName: "",
     contactNumber: "",
-    caseStatus: "Pending",
-    caseOrigin: "",
     subject: "",
-    priority: "Medium",
+    caseOrigin: "",
     date: "",
     time: "",
+    caseStatus: "Pending",
+    priority: "Medium",
   });
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -66,37 +66,37 @@ const ComplaintPage: React.FC = () => {
     }
   }, [showResolved, complaints]);
 
-  useEffect(() => {
-    socket.on('connect', () => {
-      console.log('Connected to server:', socket.id);
-    });
+  // useEffect(() => {
+  //   socket.on('connect', () => {
+  //     console.log('Connected to server:', socket.id);
+  //   });
 
-    socket.on('reminder', (data) => {
-      console.log('Reminder received:', data);
-      showToast(
-        `Unpaid Invoice Reminder Sent to ${data.customerName}`,
-        'success'
-      );
-    });
+  //   socket.on('reminder', (data) => {
+  //     console.log('Reminder received:', data);
+  //     showToast(
+  //       `Unpaid Invoice Reminder Sent to ${data.customerName}`,
+  //       'success'
+  //     );
+  //   });
 
-    socket.on("calenderreminder", (data) => {
-      console.log("Reminder received:", data);
-      showToast(
-        ` ${data.event} is scheduled soon!`,
-        "success"
-      );
-    });
+  //   socket.on("calenderreminder", (data) => {
+  //     console.log("Reminder received:", data);
+  //     showToast(
+  //       ` ${data.event} is scheduled soon!`,
+  //       "success"
+  //     );
+  //   });
 
-    socket.on('disconnect', () => {
-      console.log('Disconnected from server');
-    });
+  //   socket.on('disconnect', () => {
+  //     console.log('Disconnected from server');
+  //   });
 
-    return () => {
-      socket.off('connect');
-      socket.off('reminder');
-      socket.off('disconnect');
-    };
-  }, [showToast]);
+  //   return () => {
+  //     socket.off('connect');
+  //     socket.off('reminder');
+  //     socket.off('disconnect');
+  //   };
+  // }, [showToast]);
 
   useEffect(() => {
     fetchComplaints();
@@ -118,23 +118,24 @@ const ComplaintPage: React.FC = () => {
 
     try {
       if (isEditing) {
-        await axios.put(`/api/complaints`, formData); // Updated endpoint
+        await axios.put(`/api/complaints/${formData.id}`, formData);
         showToast("Complaint updated successfully!", "success");
       } else {
-        await axios.post("/api/complaints", formData); // Updated endpoint
+        await axios.post(`/api/complaints`, formData); // Updated endpoint
+        
         showToast("Complaint created successfully!", "success");
       }
 
       setFormData({
-        id: 0,
+        id: 0, // Changed from _id to id
         complainerName: "",
         contactNumber: "",
-        caseStatus: "Pending",
-        caseOrigin: "",
         subject: "",
-        priority: "Medium",
+        caseOrigin: "",
         date: "",
         time: "",
+        caseStatus: "Pending",
+        priority: "Medium",
       });
       setIsSubmitting(false);
       setIsEditing(false);
@@ -168,10 +169,11 @@ const ComplaintPage: React.FC = () => {
     { field: "complainerName", headerName: "Customer Name", flex: 1 },
     { field: "contactNumber", headerName: "Contact Number", flex: 1 },
     { field: "subject", headerName: "Subject", flex: 1 },
-    { field: "caseStatus", headerName: "Case Status", flex: 1 },
-    { field: "priority", headerName: "Priority", flex: 1 },
+    { field: "caseOrigin", headerName: "Problem", flex: 1 },
     { field: "date", headerName: "Date", flex: 1 },
     { field: "time", headerName: "Time", flex: 1 },
+    { field: "caseStatus", headerName: "Case Status", flex: 1 },
+    { field: "priority", headerName: "Priority", flex: 1 },
     {
       field: "action",
       headerName: "Action",

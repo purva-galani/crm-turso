@@ -16,12 +16,14 @@ export async function POST(request: Request) {
 
     // Validation
     const requiredFields = [
-      "contactNumber",
-      "caseOrigin",
-      "subject",
-      "date",
-      "time",
       "complainerName",
+      "contactNumber",
+      "subject",
+      "caseOrigin",
+      "date",
+      "time", 
+      "caseStatus",
+      "priority",
     ];
     for (const field of requiredFields) {
       if (!(field in body)) {
@@ -32,26 +34,26 @@ export async function POST(request: Request) {
     // Insert into database
     const result = await client.execute({
       sql: `INSERT INTO complaints (
-        contact_number, case_status, case_origin, subject, priority, date, time, complainer_name
+        complainerName, contactNumber, subject, caseOrigin, date, time, caseStatus, priority
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
+        body.complainerName,
         body.contactNumber,
-        body.caseStatus || "Pending",
-        body.caseOrigin,
         body.subject,
-        body.priority || "Medium",
+        body.caseOrigin,
         body.date,
         body.time,
-        body.complainerName,
+        body.caseStatus || "Pending",
+        body.priority || "Medium",
       ],
     });
 
     console.log("Insert result:", result);
 
     return NextResponse.json(
-      { id: result.lastInsertRowid, message: "Complaint created successfully" },
+      { id: Number(result.lastInsertRowid), message: "Complaint created successfully" },
       { status: 201 }
-    );
+    );    
   } catch (error) {
     console.error("Error creating complaint:", error);
     return NextResponse.json(
@@ -113,14 +115,25 @@ export async function GET_BY_ID(request: Request, { params }: { params: { id: st
 }
 
 // Update a specific complaint by ID
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request) {
   try {
-    const { id } = params;
+    const url = new URL(request.url);
+    const id = url.pathname.split("/").pop(); // Extract ID from the URL
+
+    if (!id) {
+      throw new Error("Missing complaint ID in request URL.");
+    }
+
+    const complaintId = parseInt(id);
+    if (isNaN(complaintId)) {
+      throw new Error("Invalid complaint ID.");
+    }
+
     const body = await request.json();
 
     const result = await client.execute({
       sql: `UPDATE complaints SET 
-        contact_number = ?, case_status = ?, case_origin = ?, subject = ?, priority = ?, date = ?, time = ?, complainer_name = ?
+        contactNumber = ?, caseStatus = ?, caseOrigin = ?, subject = ?, priority = ?, date = ?, time = ?, complainerName = ?
         WHERE id = ?`,
       args: [
         body.contactNumber,
@@ -131,7 +144,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
         body.date,
         body.time,
         body.complainerName,
-        parseInt(id),
+        complaintId,
       ],
     });
 
@@ -158,11 +171,18 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 // Delete a specific complaint by ID
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
-    const { id } = params;
+    if (!params || !params.id) {
+      throw new Error("Missing complaint ID in request parameters.");
+    }
+
+    const id = parseInt(params.id);
+    if (isNaN(id)) {
+      throw new Error("Invalid complaint ID.");
+    }
 
     const result = await client.execute({
       sql: "DELETE FROM complaints WHERE id = ?",
-      args: [parseInt(id)],
+      args: [id],
     });
 
     if (result.rowsAffected === 0) {

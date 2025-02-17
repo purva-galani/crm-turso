@@ -1,0 +1,98 @@
+{
+  "version": "6",
+  "dialect": "sqlite",
+  "id": "afeaea11-39f0-4e29-8af1-6e6cbbc4b9b5",
+  "prevId": "7091f09b-3f51-4b7f-80ca-bc68c7b26876",
+  "tables": {
+    "complaints": {
+      "name": "complaints",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "complainerName": {
+          "name": "complainerName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "contactNumber": {
+          "name": "contactNumber",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "caseStatus": {
+          "name": "caseStatus",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'Pending'"
+        },
+        "caseOrigin": {
+          "name": "caseOrigin",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "subject": {
+          "name": "subject",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "priority": {
+          "name": "priority",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'Medium'"
+        },
+        "date": {
+          "name": "date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "time": {
+          "name": "time",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    }
+  },
+  "views": {},
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {
+      "\"complaints\".\"complainer_name\"": "\"complaints\".\"complainerName\"",
+      "\"complaints\".\"contact_number\"": "\"complaints\".\"contactNumber\"",
+      "\"complaints\".\"case_status\"": "\"complaints\".\"caseStatus\"",
+      "\"complaints\".\"case_origin\"": "\"complaints\".\"caseOrigin\""
+    }
+  },
+  "internal": {
+    "indexes": {}
+  }
+}
